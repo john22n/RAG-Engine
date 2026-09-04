@@ -42,6 +42,7 @@ GOLDEN_DATASET_PATH = os.path.join(PROJECT_ROOT, "data", "golden_dataset_json")
 CACHE_DIR = os.path.join(PROJECT_ROOT, "cache")
 CACHE_INDEX_PATH = os.path.join(PROJECT_ROOT, "cache", "index.pkl")
 CACHE_DOCMAP_PATH = os.path.join(PROJECT_ROOT, "cache", "docmap.pkl")
+CACHE_TERM_FREQ_PATH = os.path.join(PROJECT_ROOT, "cache", "term_frequencies.pkl")
 
 DEFAULT_CHUNK_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 1
