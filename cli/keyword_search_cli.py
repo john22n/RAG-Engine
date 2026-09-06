@@ -1,19 +1,15 @@
 import argparse
 import json
-from lib.keyword_search import search_command, tokenize_text_helper, InvertedIndex
-
-
-def build_command() -> None:
-        Index = InvertedIndex()
-        Index.build()
-        Index.save()
-
-def find_tf(doc_id: int, term: str) -> None:
-    tokenized = tokenize_text_helper(term)
-    idx = InvertedIndex()
-    idx.load()
-    count = idx.get_tf(doc_id, tokenized)
-    print(f"term frequency: {count} for term: {term}")
+from lib.keyword_search import (
+        search_command,
+        tokenize_text_helper,
+        InvertedIndex,
+        build_command,
+        tf_idf_command,
+        tf_command,
+        idf_command,
+        bm25_idf_command,
+    )
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -28,11 +24,33 @@ def main() -> None:
     tf_parser.add_argument("doc_id", type=int, help="document id")
     tf_parser.add_argument("term", type=str, help="term")
 
+    idf_parser = subparsers.add_parser("idf", help="inverse document frequency")
+    idf_parser.add_argument("term", type=str, help="term")
+
+    tf_idf_parser = subparsers.add_parser("tfidf", help="get tf_idf value")
+    tf_idf_parser.add_argument("doc_id", type=int, help="document id")
+    tf_idf_parser.add_argument("term", type=str, help="term")
+
+    bm25_parser = subparsers.add_parser("bm25idf", help="Get BM25 IDF score for given term")
+    bm25_parser.add_argument("term", type=str, help="Term to get bm25 idf score for")
+
     args = parser.parse_args()
 
     match args.command:
+        case "bm25idf":
+            bm25_idf = bm25_idf_command(args.term)
+            print(f"BM25 IDF score of '{args.term}': {bm25_idf:.2f}")
+        case "tfidf":
+            tf_idf = tf_idf_command(args.doc_id, args.term)
+            print(f"TF_IDF score of '{args.term}' in doc '{args.term}': {tf_idf:.2f}")
+
+        case "idf":
+            idf = idf_command(args.term)
+            print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
+
         case "tf":
-            find_tf(args.doc_id, args.term)
+            tf = tf_command(args.doc_id, args.term)
+            print(f"Term frequency of {args.term}' in docu '{args.doc_id}': {tf:.2f}")
 
         case "search":
             #print search query here

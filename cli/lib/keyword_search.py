@@ -1,5 +1,6 @@
 import pickle
 import os
+import math
 from nltk.stem import PorterStemmer
 from collections import defaultdict, Counter
 from .search_utils import (
@@ -92,6 +93,27 @@ class InvertedIndex:
     def get_tf(self, doc_id: int, term: str) -> int:
         return self.term_frequencies.get(doc_id, {}).get(term, 0)
 
+    def get_idf(self, text: str) -> float:
+        docs = self.docmap
+        num_of_docs = len(self.docmap.keys())
+        frequency = self.get_doc_frequency(text)
+        return math.log((num_of_docs + 1) / (frequency + 1))
+
+    def get_tf_idf(self, doc_id: int, term: str) -> float:
+        return self.get_tf(doc_id, term) * self.get_idf(term)
+
+    def get_doc_frequency(self, term: str) -> int:
+        frequency = 0
+        for doc in self.docmap:
+            if term in self.term_frequencies[doc]:
+                frequency += 1
+        return frequency
+
+    def get_bm25_idf(self, term: str) -> float:
+        num_of_docs = len(self.docmap.keys())
+        frequency = self.get_doc_frequency(term)
+        return math.log((num_of_docs - frequency + 0.5) / (frequency + 0.5) + 1)
+
     def save(self) -> None:
         os.makedirs(CACHE_DIR, exist_ok=True)
         with open(CACHE_INDEX_PATH, "wb") as index_file:
@@ -116,3 +138,33 @@ class InvertedIndex:
 
         except FileNotFoundError:
             print(f"Error: file not found")
+
+
+def build_command() -> None:
+    Index = InvertedIndex()
+    Index.build()
+    Index.save()
+
+def tf_command(doc_id: int, term: str) -> float:
+    idx = InvertedIndex()
+    idx.load()
+    return idx.get_tf(doc_id, tokenize_text_helper(term))
+
+def idf_command(term: str) -> float:
+    idx = InvertedIndex()
+    idx.load()
+    return idx.get_idf(tokenize_text_helper(term))
+
+def tf_idf_command(doc_id: int, term: str) -> float:
+    idx = InvertedIndex()
+    idx.load()
+    tokenized = tokenize_text_helper(term)
+    return  idx.get_tf_idf(doc_id, tokenized)
+
+def bm25_idf_command(term: str) -> float:
+    idx = InvertedIndex()
+    idx.load()
+    tokenized_term = tokenize_text_helper(term)
+    return idx.get_bm25_idf(tokenized_term)
+
+
