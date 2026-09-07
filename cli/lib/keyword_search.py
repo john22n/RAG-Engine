@@ -9,7 +9,8 @@ from .search_utils import (
     CACHE_DOCMAP_PATH,
     CACHE_TERM_FREQ_PATH,
     Movie,
-    load_movies
+    load_movies,
+    BM25_K1
 )
 
 from .search_utils import (
@@ -65,10 +66,11 @@ def tokenize_text_helper(text: str) -> str:
 
 class InvertedIndex:
 
-    def __init__(self) -> None:
+    def __init__(self, k1=BM25_K1) -> None:
         self.index = defaultdict(set)
         self.docmap: dict[int, Movie] = {}
         self.term_frequencies = defaultdict(Counter)
+        self.k1 = k1
 
     def __add_document(self, doc_id: int, text: str) -> None:
         tokens = filter_tokens(tokenize_text(text))
@@ -113,6 +115,14 @@ class InvertedIndex:
         num_of_docs = len(self.docmap.keys())
         frequency = self.get_doc_frequency(term)
         return math.log((num_of_docs - frequency + 0.5) / (frequency + 0.5) + 1)
+
+    def get_bm25_tf(self, doc_id, term, k1=None) -> float:
+        if k1 is None:
+            k1 = self.k1
+        print(k1)
+        tf = self.get_tf(doc_id, term)
+        return (tf * (k1 + 1)) / (tf + k1)
+
 
     def save(self) -> None:
         os.makedirs(CACHE_DIR, exist_ok=True)
@@ -166,5 +176,12 @@ def bm25_idf_command(term: str) -> float:
     idx.load()
     tokenized_term = tokenize_text_helper(term)
     return idx.get_bm25_idf(tokenized_term)
+
+def bm25_tf_command(doc_id: int, term: str, k1=BM25_K1) -> float:
+    idx = InvertedIndex()
+    idx.load()
+    tokenized = tokenize_text_helper(term)
+    return idx.get_bm25_tf(doc_id, tokenized, k1)
+
 
 
