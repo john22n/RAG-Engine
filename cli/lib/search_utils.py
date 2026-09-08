@@ -1,7 +1,9 @@
 import json
+from nltk.stem import PorterStemmer
 import os
 import string
 from typing import Any, TypedDict
+
 
 class Movie(TypedDict):
     id: int
@@ -43,6 +45,7 @@ CACHE_DIR = os.path.join(PROJECT_ROOT, "cache")
 CACHE_INDEX_PATH = os.path.join(PROJECT_ROOT, "cache", "index.pkl")
 CACHE_DOCMAP_PATH = os.path.join(PROJECT_ROOT, "cache", "docmap.pkl")
 CACHE_TERM_FREQ_PATH = os.path.join(PROJECT_ROOT, "cache", "term_frequencies.pkl")
+CACHE_DOCS_LENGTH_PATH = os.path.join(PROJECT_ROOT, "cache", "docs_lengths.pkl")
 
 DEFAULT_CHUNK_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 1
@@ -89,5 +92,6 @@ def load_golden_dataset() -> GoldenDataset:
         return json.load(f)
 
 def load_stopwords() -> list[str]:
+    stemmer = PorterStemmer()
     with open(STOPWORDS_PATH, 'r') as f:
-        return [preprocessed_text(word) for word in f.read().splitlines()]
+        return [stemmer.stem(preprocessed_text(word)) for word in f.read().splitlines()]

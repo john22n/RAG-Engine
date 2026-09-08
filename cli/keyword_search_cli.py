@@ -1,5 +1,6 @@
 import argparse
 import json
+from lib.search_utils import BM25_B, BM25_K1
 from lib.keyword_search import (
         search_command,
         tokenize_text_helper,
@@ -9,7 +10,8 @@ from lib.keyword_search import (
         tf_command,
         idf_command,
         bm25_idf_command,
-        bm25_tf_command
+        bm25_tf_command,
+        bm25_search_cmd
     )
 
 def main() -> None:
@@ -38,13 +40,24 @@ def main() -> None:
     bm25_tf_parser = subparsers.add_parser("bm25tf", help="Get BM25 TF score for given doc id and term")
     bm25_tf_parser.add_argument("doc_id", type=int, help="document id")
     bm25_tf_parser.add_argument("term", type=str, help="term to get bm25 tf score ")
-    bm25_tf_parser.add_argument("k1", type=float, nargs="?", help="turnable bm25 k1 param")
+    bm25_tf_parser.add_argument("k1", type=float, nargs="?", default=BM25_K1, help="turnable bm25 k1 param")
+    bm25_tf_parser.add_argument("b", type=float, nargs="?", default=BM25_B, help="turnable bm25 b param")
+
+    bm25_search_parser = subparsers.add_parser("bm25search", help="get bm25 search value")
+    bm25_search_parser.add_argument("query", type=str, help="bm25 search query")
+    bm25_search_parser.add_argument("--limit", type=int, default=5, help=" optional args limit value")
 
     args = parser.parse_args()
 
     match args.command:
+        case "bm25search":
+            search_list,docs = bm25_search_cmd(args.query, args.limit)
+            for i,res in enumerate(search_list):
+                document = docs[res[0]]
+                print(f"({i + 1}). ({document['id']}) {document['title']} - Score: {res[1]:.2f}")
+
         case "bm25tf":
-            bm25_tf = bm25_tf_command(args.doc_id, args.term, args.k1)
+            bm25_tf = bm25_tf_command(args.doc_id, args.term, args.k1, args.b)
             print(f"BM25 TF score of '{args.term}' in document '{args.doc_id}': {bm25_tf:.2f}")
 
         case "bm25idf":
