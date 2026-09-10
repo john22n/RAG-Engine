@@ -24,7 +24,7 @@ class GoldenTestCase(TypedDict):
 class GoldenDataset(TypedDict):
     test_cases: list[GoldenTestCase]
 
-
+MODEL = "all-MiniLM-L6-v2"
 DEFAULT_ALPHA = 0.5
 RRF_K = 60
 SEARCH_MULTIPLIER = 5
@@ -46,6 +46,7 @@ CACHE_INDEX_PATH = os.path.join(PROJECT_ROOT, "cache", "index.pkl")
 CACHE_DOCMAP_PATH = os.path.join(PROJECT_ROOT, "cache", "docmap.pkl")
 CACHE_TERM_FREQ_PATH = os.path.join(PROJECT_ROOT, "cache", "term_frequencies.pkl")
 CACHE_DOCS_LENGTH_PATH = os.path.join(PROJECT_ROOT, "cache", "docs_lengths.pkl")
+CACHE_EMBEDDINGS_PATH = os.path.join(PROJECT_ROOT, "cache", "movie_embeddings..npy")
 
 DEFAULT_CHUNK_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 1
