@@ -48,18 +48,36 @@ class SemanticSearch:
         if os.path.exists(CACHE_EMBEDDINGS_PATH):
             self.embeddings = np.load(CACHE_EMBEDDINGS_PATH)
 
-        if len(documents) == len(self.embeddings):
+        if self.embeddings is not None and len(documents) == len(self.embeddings):
             return self.embeddings
         else:
             return self.build_embeddings(documents)
 
+    def search(self, query: str, limit: int) -> list | None:
+        if self.embeddings is None:
+            raise ValueError("No embeddings loaded. Call 'load_or_create_embeddings' first.")
+
+        embedded_query = self.generate_embedding(query)
+
+        cosine_similarities = []
+
+        if self.documents is not None:
+            for doc, embed in zip(self.documents, self.embeddings):
+                similarity_score = cosine_similarity(embedded_query, embed)
+                cosine_similarities.append((similarity_score, doc))
 
 
+        sorted_scores = sorted(cosine_similarities, key=lambda x: x[0], reverse=True)
 
+        top_list = []
 
+        for score in sorted_scores:
+            res = {'score':score[0], 'title':score[1]['title'], 'description':score[1]['description']}
+            top_list.append(res)
+            if len(top_list) >= limit:
+                return top_list
 
-
-
+        return top_list
 
 def verify_model():
     ss = SemanticSearch()
@@ -80,5 +98,20 @@ def verify_embeddings():
     print(f"Number of docs: {len(movies)}")
     print(f"Embeddings shape: {embeddings.shape[0]} vectors in {embeddings.shape[1]} dimensions")
 
+def embed_query_text(query:str) -> None:
+    ss = SemanticSearch()
+    embedded = ss.generate_embedding(query)
+    print(f"Query: {query}")
+    print(f"First 3 dimensions: {embedded[:3]}")
+    print(f"Shape: {embedded.shape}")
+
+def cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
+    dot_product = np.dot(vec1, vec2)
+    norm1 = np.linalg.norm(vec1)
+    norm2 = np.linalg.norm(vec2)
+
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+    return dot_product / (norm1 * norm2)
 
 
