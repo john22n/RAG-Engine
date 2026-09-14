@@ -8,7 +8,7 @@ from lib.semantic_search import (
         embed_query_text,
         search_query,
         chunk_text,
-        semantic_chunk,
+        semantic_chunk_text,
         chunk,
         embed_chunks,
         search_chunks,
@@ -58,7 +58,7 @@ def main() -> None:
             embed_chunks()
 
         case "semantic_chunk":
-            semantic_chunk(args.text, args.max_chunk_size, args.overlap)
+            semantic_chunk_text(args.text, args.max_chunk_size, args.overlap)
 
         case "chunk":
             chunk_text(args.text, args.chunk_size, args.overlap)
