@@ -47,14 +47,17 @@ CACHE_DOCMAP_PATH = os.path.join(PROJECT_ROOT, "cache", "docmap.pkl")
 CACHE_TERM_FREQ_PATH = os.path.join(PROJECT_ROOT, "cache", "term_frequencies.pkl")
 CACHE_DOCS_LENGTH_PATH = os.path.join(PROJECT_ROOT, "cache", "docs_lengths.pkl")
 CACHE_EMBEDDINGS_PATH = os.path.join(PROJECT_ROOT, "cache", "movie_embeddings..npy")
+CHUNK_EMBEDDINGS_PATH = os.path.join(PROJECT_ROOT, "cache", "chunk_embeddings.npy")
+CHUNK_METADATA_PATH = os.path.join(PROJECT_ROOT, "cache", "chunk_metadata.json")
 
 DEFAULT_CHUNK_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 1
 DEFAULT_SEMANTIC_CHUNCH_SIZE = 4
+DEFAULT_SEARCH_LIMIT = 4
 
 MOVIE_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "movie_embeddings.npy")
-CHUNK_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "chunk_embeddings.npy")
-CHUNK_METADATA_PATH = os.path.join(CACHE_DIR, "chunk_metadata.json")
+#CHUNK_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "chunk_embeddings.npy")
+#CHUNK_METADATA_PATH = os.path.join(CACHE_DIR, "chunk_metadata.json")
 
 def preprocessed_text(text: str) -> str:
     text = text.lower()

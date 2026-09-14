@@ -6,19 +6,13 @@ from lib.semantic_search import (
         embed_text,
         verify_embeddings,
         embed_query_text,
+        search_query,
+        chunk_text,
+        semantic_chunk,
+        chunk,
+        embed_chunks,
+        search_chunks,
     )
-
-
-def search_query(query, limit):
-    ss = SemanticSearch()
-    movies = load_movies()
-    ss.load_or_create_embeddings(movies)
-    search_res = ss.search(query, limit)
-
-    if search_res is not None:
-        for i, res in enumerate(search_res):
-            print(f"{i + 1}. {res["title"]} (score: {res["score"]:.4f})  {res["description"].strip()}")
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
@@ -38,9 +32,37 @@ def main() -> None:
     search_parser.add_argument("query", type=str, help="search query")
     search_parser.add_argument("--limit", type=int ,default=5, help="optional limit")
 
+    chunk_parser = subparsers.add_parser("chunk", help="chunk the text")
+    chunk_parser.add_argument("text",type=str,  help="chunk the text")
+    chunk_parser.add_argument("--chunk-size", type=int, default=200, help="chunk the text")
+    chunk_parser.add_argument("--overlap", type=int, default=0, help="overlap text")
+
+    semantic_chunk_parser = subparsers.add_parser("semantic_chunk", help="sematic chunk text")
+    semantic_chunk_parser.add_argument("text", type=str, help="text to sem chunk")
+    semantic_chunk_parser.add_argument("--max-chunk-size", type=int, default=4, help="option to config size")
+    semantic_chunk_parser.add_argument("--overlap", type=int, default=0, help="overlap config")
+
+    embed_chunk_parser = subparsers.add_parser("embed_chunks", help="embed document chunks")
+
+    search_chunked_parser = subparsers.add_parser("search_chunked", help="embed document chunks")
+    search_chunked_parser.add_argument("text",type=str, help="embed document chunks")
+    search_chunked_parser.add_argument("--limit",type=int,default=5, help="embed document chunks")
+
     args = parser.parse_args()
 
     match args.command:
+        case "search_chunked":
+            search_chunks(args.text, args.limit)
+
+        case "embed_chunks":
+            embed_chunks()
+
+        case "semantic_chunk":
+            semantic_chunk(args.text, args.max_chunk_size, args.overlap)
+
+        case "chunk":
+            chunk_text(args.text, args.chunk_size, args.overlap)
+
         case "search":
             search_query(args.query, args.limit)
 
