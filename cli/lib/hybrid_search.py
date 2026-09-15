@@ -1,6 +1,6 @@
 from collections import defaultdict
 import os
-from typing import NotRequired, TypedDict
+from typing import NotRequired, TypedDict, cast
 
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch, SemanticSearchResult
@@ -88,13 +88,13 @@ class HybridSearch:
             entry["semantic"] = max(entry['semantic'], doc['score'])
             entry["rrf"] = entry['rrf'] + rrf_score(idx + 1)
 
-        sorted_scores: list[WeightedSearchResults] = sorted(
+        sorted_scores = sorted(
                 ranked_docs.values(),
                 key=lambda item: item.get('rrf', 0),
                 reverse=True
                 )
 
-        return sorted_scores[:limit]
+        return cast(list[WeightedSearchResults], sorted_scores[:limit])
 
 def normalize(numbers: list[float]) -> list[float]:
     if not numbers:
