@@ -11,3 +11,4 @@ wheels/
 /data/
 cache/
 .DS_Store
+.env

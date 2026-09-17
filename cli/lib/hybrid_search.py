@@ -1,10 +1,11 @@
 from collections import defaultdict
 import os
-from typing import NotRequired, TypedDict, cast
+from typing import NotRequired, TypedDict, cast, Literal
 
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch, SemanticSearchResult
 from .search_utils import Movie, CACHE_INDEX_PATH, load_movies
+from .llm_utils import LLM
 
 class WeightedSearchResults(TypedDict):
     keyword: float
@@ -127,7 +128,14 @@ def hybrid_score(bm25_score: float, semantic_score: float, alpha: float = 0.5) -
 def rrf_score(rank: int, k: int = 60) -> float:
     return 1 / (k + rank)
 
-def rrf_search(query: str, k: int, limit: int) -> None:
+def rrf_search(query: str, k: int, limit: int, enhance: Literal['spell', 'rewrite', 'expand'] | None = None) -> None:
+    enhanced_query = None
+    if enhance is not None:
+        llm = LLM()
+        enhanced_query = llm.enhance_query(query, enhance)
+        print(f"Enhanced query ({enhance}): '{query}' -> '{enhanced_query}'")
+        query = enhanced_query
+
     movies = load_movies()
     hybrid_search = HybridSearch(movies)
     res = hybrid_search.rrf_search(query, k, limit)
