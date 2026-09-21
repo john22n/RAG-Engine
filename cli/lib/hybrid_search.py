@@ -172,12 +172,13 @@ def hybrid_score(bm25_score: float, semantic_score: float, alpha: float = 0.5) -
 def rrf_score(rank: int, k: int = 60) -> float:
     return 1 / (k + rank)
 
-def rrf_search(
+def rrf_search_command(
         query: str,
         k: int,
         limit: int,
         enhance: Literal['spell', 'rewrite', 'expand'] | None = None,
-        reranking_method: Literal['individual', 'batch', 'cross_encoder'] | None = None
+        reranking_method: Literal['individual', 'batch', 'cross_encoder'] | None = None,
+        evalute: bool = False
         ) -> None:
 
     rr_limit = limit
@@ -185,6 +186,7 @@ def rrf_search(
     enhanced_query = None
     score_key = ''
     score_title = ''
+    print(f"original query {query}")
 
     if enhance is not None:
         enhanced_query = llm.enhance_query(query, enhance)
@@ -206,11 +208,21 @@ def rrf_search(
     hybrid_search = HybridSearch(movies)
     res = hybrid_search.rrf_search(query, k, rr_limit)
 
-    rr_sorted_res = hybrid_search.rerank_score(query, res, reranking_method, limit)
+    if evalute == True:
+        evaluated_res = llm.evaluate_results(query, res)
+        evals = json.loads(evaluated_res)
+        print(evals)
 
+        for i, (eval, (id, r)) in enumerate(zip(evals, res), start=1):
+            print(f"{i}. {r['title']} {eval}/3")
+
+
+    rr_sorted_res = hybrid_search.rerank_score(query, res, reranking_method, limit)
+"""
     for i, r in enumerate(rr_sorted_res, start=1):
         print(f"{i}. {r['title']}")
         print(f"{score_title}: {r[score_key]}")
         print(f"RRF Score: {r.get('rrf', 0):.4f}")
         print(f"BM25: {r['keyword']:.4f}, Semantic: {r['semantic']:.4f}")
         print(f"{r['description'][:100]}...")
+        """

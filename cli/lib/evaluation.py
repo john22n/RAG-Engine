@@ -36,6 +36,11 @@ def recall_at_k(
 
     return  relevant_count / len(total_relevant)
 
+def f1_score(precision: float, recall: float) -> float:
+    if (precision + recall) == 0:
+        return 0.0
+    return 2 * (precision * recall) / (precision + recall)
+
 def evaluate_command(limit: int = 5) -> dict:
     movies = load_movies()
     golden_dataset  = load_golden_dataset()
@@ -60,10 +65,12 @@ def evaluate_command(limit: int = 5) -> dict:
 
         precision = precision_at_k(retrieved_docs, relevant_docs, limit)
         recall = recall_at_k(retrieved_docs, relevant_docs, limit)
+        fi = f1_score(precision, recall)
 
         results_by_query[query] = {
                 'recall': recall,
                 'precision': precision,
+                'f1_score': fi,
                 'retrieved': retrieved_docs[:limit],
                 'relevant': list(relevant_docs)
                 }

@@ -59,6 +59,7 @@ class InvertedIndex:
         self.k1 = k1
         self.doc_lengths = {}
         self.b = b
+        self._avg_doc_length = 0.0
 
     def __add_document(self, doc_id: int, text: str) -> None:
         tokens = filter_tokens(tokenize_text(text))
@@ -81,42 +82,36 @@ class InvertedIndex:
             self.docmap[doc_id] = movie
             self.__add_document(doc_id, doc_description)
 
+        self._calculate_avg_doc_length()
+
     def get_tf(self, doc_id: int, term: str) -> int:
         return self.term_frequencies.get(doc_id, {}).get(term, 0)
 
     def get_idf(self, text: str) -> float:
-        docs = self.docmap
-        num_of_docs = len(self.docmap.keys())
-        frequency = self.get_doc_frequency(text)
-        return math.log((num_of_docs + 1) / (frequency + 1))
+        doc_count = len(self.docmap)
+        term_doc_count = len(self.index[text])
+        return math.log((doc_count + 1) / (term_doc_count+ 1))
 
     def get_tf_idf(self, doc_id: int, term: str) -> float:
         return self.get_tf(doc_id, term) * self.get_idf(term)
 
-    def get_doc_frequency(self, term: str) -> int:
-        frequency = 0
-        for doc in self.docmap:
-            if term in self.term_frequencies[doc]:
-                frequency += 1
-        return frequency
-
     def get_bm25_idf(self, term: str) -> float:
-        num_of_docs = len(self.docmap.keys())
-        frequency = self.get_doc_frequency(term)
-        return math.log((num_of_docs - frequency + 0.5) / (frequency + 0.5) + 1)
+        doc_count = len(self.docmap)
+        term_doc_count = len(self.index[term])
+        return math.log((doc_count - term_doc_count + 0.5) / (term_doc_count+ 0.5) + 1)
 
     def get_bm25_tf(self, doc_id, term, k1=None, b=None) -> float:
         if k1 is None:
             k1 = self.k1
         if b is None:
             b = self.b
-        avg_doc_length = self.__get_avg_doc_length()
+        avg_doc_length = self._avg_doc_length
         length_norm = 1 - b + b * (self.doc_lengths.get(doc_id, 0) / avg_doc_length)
         tf = self.get_tf(doc_id, term)
         return (tf * (k1 + 1)) / (tf + k1 * length_norm)
 
-    def __get_avg_doc_length(self) -> float:
-        return statistics.mean(self.doc_lengths.values())
+    def _calculate_avg_doc_length(self) -> None:
+        self._avg_doc_length = statistics.mean(self.doc_lengths.values())
 
     def bm25(self, doc_id: int, term: str) -> float:
         return self.get_bm25_idf(term) * self.get_bm25_tf(doc_id, term)
@@ -148,6 +143,7 @@ class InvertedIndex:
         with open(CACHE_DOCS_LENGTH_PATH, "wb") as docs_length_file:
             pickle.dump(self.doc_lengths, docs_length_file)
 
+
     def load(self) -> tuple[dict, dict] | None:
         try:
             with open(CACHE_INDEX_PATH, "rb") as index_file:
@@ -161,6 +157,8 @@ class InvertedIndex:
 
             with open(CACHE_DOCS_LENGTH_PATH, "rb") as docs_length_file:
                 self.doc_lengths = pickle.load(docs_length_file)
+
+            self._calculate_avg_doc_length()
 
         except FileNotFoundError:
             print(f"Error: file not found")

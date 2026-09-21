@@ -5,7 +5,7 @@ from typing import Literal
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from .prompts.rerank import batch_prompt, rerank_prompt
+from .prompts.rerank import batch_prompt, evaluate_prompt, rerank_prompt
 from .prompts.spell import expand_prompt, rewrite_prompt, spell_prompt
 
 load_dotenv()
@@ -78,5 +78,24 @@ class LLM:
         return rr_res.choices[0].message.content
 
 
+    def evaluate_results(self, query, results) -> str | None:
+        prompt = evaluate_prompt
+        retrieved_docs = []
+        for id, res in results:
+            title = res.get('title', '')
+            if title:
+                retrieved_docs.append(title)
+        titles = ", ".join(retrieved_docs)
+
+        evaluate_res = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt(query, titles)
+                        }
+                    ]
+                )
+        return evaluate_res.choices[0].message.content
 
 
