@@ -19,7 +19,7 @@ class SearchResult(TypedDict):
 
 class GoldenTestCase(TypedDict):
     query: str
-    relavent_docs: list[str]
+    relevant_docs: list[str]
 
 class GoldenDataset(TypedDict):
     test_cases: list[GoldenTestCase]

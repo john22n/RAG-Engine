@@ -70,7 +70,7 @@ class HybridSearch:
 
         return sorted_scores[:limit]
 
-    def rrf_search(self, query: str, k: int, limit: int = 10) -> list[WeightedSearchResults]:
+    def rrf_search(self, query: str, k: int, limit: int = 10) -> list[tuple[str,WeightedSearchResults]]:
         sorted_keyword_res, documents = self._bm25_search(query, limit * 500)
         semantic_results: list[dict] = self.semantic_search.search_chunks(query, limit * 500)
 
@@ -97,7 +97,7 @@ class HybridSearch:
                 reverse=True
                 )
 
-        return cast(list[WeightedSearchResults], sorted_scores[:limit])
+        return sorted_scores[:limit]
 
     def rerank_score(self, query, docs, reranking_method, limit: int) -> list[dict]:
         reranked_list = []
@@ -214,12 +214,3 @@ def rrf_search(
         print(f"RRF Score: {r.get('rrf', 0):.4f}")
         print(f"BM25: {r['keyword']:.4f}, Semantic: {r['semantic']:.4f}")
         print(f"{r['description'][:100]}...")
-
-
-def rrf_search_eval(query:str, k:int, limit:int) -> list[WeightedSearchResults]:
-    llm = LLM()
-    movies = load_movies()
-    hybrid_search = HybridSearch(movies)
-    return hybrid_search.rrf_search(query, k, limit)
-
-
