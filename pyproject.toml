@@ -13,5 +13,8 @@ dependencies = [
 ]
 
 [tool.pyright]
+include = ["cli"]
+exclude = [".venv", "cache", "data"]
 venvPath = "."
 venv = ".venv"
+diagnosticMode = "openFilesOnly"

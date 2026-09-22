@@ -5,6 +5,7 @@ from typing import Literal
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from .prompts.rag import question_prompt, citation_prompt, rag_prompt, summarize_prompt
 from .prompts.rerank import batch_prompt, evaluate_prompt, rerank_prompt
 from .prompts.spell import expand_prompt, rewrite_prompt, spell_prompt
 
@@ -98,4 +99,58 @@ class LLM:
                 )
         return evaluate_res.choices[0].message.content
 
+    def rag_results(self, query, documents) -> str | None:
+        prompt = rag_prompt
 
+        rag_result = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt(query, documents)
+                        }
+                    ]
+                )
+        return rag_result.choices[0].message.content
+
+    def summarize_results(self, query, documents) -> str | None:
+        prompt = summarize_prompt
+
+        summarize_result = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt(query, documents)
+                        }
+                    ]
+                )
+        return summarize_result.choices[0].message.content
+
+    def citation_results(self, query, documents) -> str | None:
+        prompt = citation_prompt
+
+        summarize_result = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt(query, documents)
+                        }
+                    ]
+                )
+        return summarize_result.choices[0].message.content
+
+    def question_results(self, query, documents) -> str | None:
+        prompt = question_prompt
+
+        question_result = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt(query, documents)
+                        }
+                    ]
+                )
+        return question_result.choices[0].message.content
