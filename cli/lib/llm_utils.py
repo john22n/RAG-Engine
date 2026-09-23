@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 import numpy as np
 from typing import Literal
 from dotenv import load_dotenv
@@ -8,6 +9,7 @@ from openai import OpenAI
 from .prompts.rag import question_prompt, citation_prompt, rag_prompt, summarize_prompt
 from .prompts.rerank import batch_prompt, evaluate_prompt, rerank_prompt
 from .prompts.spell import expand_prompt, rewrite_prompt, spell_prompt
+from .prompts.image import system_prompt
 
 load_dotenv()
 
@@ -154,3 +156,33 @@ class LLM:
                     ]
                 )
         return question_result.choices[0].message.content
+
+    def read_image(self, query, image, mime):
+        data_url = f"data:{mime};base64,{base64.b64encode(image).decode()}"
+        message = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": system_prompt.strip()},
+                    {"type": "image_url", "image_url": {"url": data_url}},
+                    {"type": "text", "text": query.strip()}
+                ]
+            }
+                    ]
+
+        image_res = self.client.chat.completions.create(
+                model=self.model,
+                messages=message
+                )
+
+        usage = None
+        if image_res.usage is not None:
+            usage = image_res.usage.total_tokens
+
+        return {
+                "content": image_res.choices[0].message.content,
+                "usage": usage
+                }
+
+
+

@@ -8,6 +8,7 @@ dependencies = [
     "nltk==3.9.1",
     "numpy==2.3.3",
     "openai>=3.14.1",
+    "pillow>=12.3.0",
     "python-dotenv>=1.2.3",
     "sentence-transformers>=6.0.1",
 ]
@@ -18,3 +19,4 @@ exclude = [".venv", "cache", "data"]
 venvPath = "."
 venv = ".venv"
 diagnosticMode = "openFilesOnly"
+useLibraryCodeForTypes = false
